@@ -1,0 +1,44 @@
+---
+title: "Estadistica Espacia Tarea 2"
+author: "Fabián Hernández Arrieta"
+date: "9/16/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(spData)
+library(sf)
+library(tmap)
+library(tidyverse)
+library(RColorBrewer)
+```
+
+```{r, error=FALSE, warning=FALSE, message=FALSE}
+africa = world %>% 
+  filter(continent == "Africa", !is.na(iso_a2)) %>%
+  left_join(worldbank_df, by = "iso_a2") %>% 
+  select(name, subregion, gdpPercap, HDI, pop_growth) %>% 
+  arrange(desc(HDI)) %>% 
+  st_transform("+proj=aea +lat_1=20 +lat_2=-23 +lat_0=0 +lon_0=25")
+
+
+plot(africa[,"HDI"], main = "Índice de desarrollo humano, Africa", breaks = "pretty", axes = FALSE, key.length = 1, logz = FALSE, bg="#feffff", pal=sf.colors(cutoff.tails = c(0.2, 0.35), alpha = 0.7, categorical = FALSE))
+title(xlab="Fuente: Datos abiertos, Banco Mundial, 2014", outer=FALSE)
+
+tmap_style("classic")
+tm_shape(africa) + 
+  tm_polygons("HDI", palette = "RdYlBu", title = "IDH") +
+  tm_layout(bg.color = "skyblue", inner.margins = c(0, .02, .02, .02))
+```
+
+
+### Ventajas de plot vs tmap
+* Hay un control más granular de las partes del gráfico, lo que permite un nivel de detalle y customización bastante más elevados que tmap. (Sin embargo, esto requeriría un esfuerzo desmedido a mi parecer)
+* El mostrar el mismo mapa según diferentes variables, es más natural usando plot que tmap. Con un comando más simple se puede tener una perspectiva más amplia de las variables relacionadas a las unidades de interés del mapa.
+
+### Ventajas de tmap vs plot
+* Tmap permite estandarizar de una mejor manera el mostrar mapas, esto quiere decir que la biblioteca incorpora nativamente buenas practicas a la hora de mostrar mapas, como el manejo de missing values y la paleta de colores.
+* Al ser una librería de un único proposito (plot es multiproposito ya que con esta se pueden hacer muchos tipos de gráficos), definitivamente el manejo del mapa y sus componentes es más simple.
+
